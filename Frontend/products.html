@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shop all — loop</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600;1,700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <!-- Catalog data must load before the listing behaviour. -->
+  <script defer src="assets/js/products-data.js"></script>
+  <script defer src="assets/js/catalog.js"></script>
+  <script defer src="assets/js/motion.js"></script>
+</head>
+<body class="shop-page">
+  <header class="shop-nav">
+    <a class="brand" href="index.html">loop<span>°</span></a>
+    <nav aria-label="Main navigation"><a href="products.html">Shop</a><a class="nav-category" href="index.html#collections">Categories</a><a href="index.html#our-story">Our story</a></nav>
+    <div class="nav-actions"><a href="#catalog-grid">Search</a><a href="#">Bag (0)</a></div>
+  </header>
+  <main>
+    <!-- SHOP HEADER -->
+    <section class="plp-head"><p class="eyebrow">The loop collection</p><h1>Good things,<br><em>made slowly.</em></h1><p>Hand-crocheted bags, headwear, home pieces, charms and giftable little treasures.</p></section>
+    <!-- FILTERS: category names come from products-data.js. -->
+    <section class="shop-tools"><button type="button">Filter <span>+</span></button><div class="filter-links"><a class="active" data-filter="all" href="#">All pieces</a><a data-filter="bags" href="#">Bags &amp; totes</a><a data-filter="headwear" href="#">Headwear</a><a data-filter="home-decor" href="#">Home decor</a><a data-filter="charms" href="#">Charms &amp; gifts</a></div><button type="button">Sort by <span>↕</span></button></section>
+    <p class="filter-status" id="filter-status" aria-live="polite"></p>
+    <!-- PRODUCT GRID: populated from assets/js/products-data.js. -->
+    <section class="catalog-grid" id="catalog-grid"></section>
+  </main>
+  <footer><p class="brand">loop<span>°</span></p><div class="footer-bottom"><span>© 2026 LOOP STUDIO</span><span>HANDMADE WITH PATIENCE</span></div></footer>
+</body>
+</html>

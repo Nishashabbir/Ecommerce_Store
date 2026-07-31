@@ -1,0 +1,55 @@
+.admin-shell {
+  background: #f7f5f2;
+  color: #25211f;
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  min-height: 100vh;
+}
+
+.admin-sidebar {
+  background: #25211f;
+  color: #fff;
+  padding: 32px 20px;
+}
+
+.admin-brand {
+  color: #fff;
+  display: block;
+  font-family: Georgia, serif;
+  font-size: 24px;
+  margin: 0 0 44px;
+  text-decoration: none;
+}
+
+.admin-nav { display: grid; gap: 6px; }
+.admin-nav a {
+  border-radius: 6px;
+  color: #d8d2cd;
+  padding: 11px 12px;
+  text-decoration: none;
+}
+.admin-nav a:hover, .admin-nav a.is-active { background: #423a36; color: #fff; }
+
+.admin-content { padding: clamp(40px, 8vw, 112px); }
+.admin-eyebrow { color: #8b7070; font-size: 12px; letter-spacing: .12em; margin: 0 0 14px; text-transform: uppercase; }
+.admin-content h1 { font-family: Georgia, serif; font-size: clamp(42px, 6vw, 76px); font-weight: 400; line-height: 1; margin: 0; }
+.admin-message { font-size: 17px; margin: 20px 0 30px; }
+.admin-logout { background: #25211f; border: 0; border-radius: 5px; color: #fff; cursor: not-allowed; font: inherit; opacity: .55; padding: 11px 20px; }
+.admin-note { color: #8b7070; font-size: 13px; margin-top: 14px; }
+
+.admin-login-page { align-items: center; background: #f7f5f2; display: flex; justify-content: center; min-height: 100vh; padding: 24px; }
+.admin-login-card { background: #fff; border: 1px solid #ded8d3; max-width: 420px; padding: clamp(32px, 6vw, 54px); width: 100%; }
+.admin-login-card h1 { font-family: Georgia, serif; font-size: 44px; font-weight: 400; line-height: 1; margin: 0 0 38px; }
+.admin-login-fields { display: grid; gap: 22px; }
+.admin-login-fields label { color: #423a36; display: grid; font-size: 14px; gap: 8px; }
+.admin-login-fields input { background: #fff; border: 1px solid #cfc7c1; border-radius: 3px; font: inherit; min-height: 44px; padding: 8px 10px; }
+.admin-login-fields input:focus { border-color: #423a36; outline: 1px solid #423a36; }
+.admin-login-button { background: #25211f; border: 0; border-radius: 3px; color: #fff; font: inherit; margin-top: 30px; padding: 12px 20px; width: 100%; }
+
+@media (max-width: 640px) {
+  .admin-shell { display: block; }
+  .admin-sidebar { padding: 22px; }
+  .admin-brand { margin-bottom: 20px; }
+  .admin-nav { display: flex; flex-wrap: wrap; gap: 4px; }
+  .admin-nav a { padding: 8px 10px; }
+}

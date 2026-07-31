@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product — loop</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600;1,700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script defer src="assets/js/motion.js"></script>
+  <!-- Product data must load before the detail-page behaviour. -->
+  <script defer src="assets/js/products-data.js"></script>
+  <script defer src="assets/js/product-detail.js"></script>
+</head>
+<body class="shop-page">
+  <header class="shop-nav">
+    <a class="brand" href="index.html">loop<span>°</span></a>
+    <nav aria-label="Main navigation"><a href="products.html">Shop</a><a class="nav-category" href="index.html#collections">Categories</a><a href="index.html#our-story">Our story</a></nav>
+    <div class="nav-actions"><a href="products.html">Search</a><a href="#">Bag (0)</a></div>
+  </header>
+  <main class="pdp">
+    <p class="crumb"><a href="products.html">Shop all</a> / Product details</p>
+    <!-- PRODUCT DETAILS: content is populated by assets/js/product-detail.js. -->
+    <section class="detail-layout" >
+      <div class="detail-image-wrap"><img id="detail-image" src="assets/images/products/bag.png" alt="Crochet product"></div>
+      <aside class="product-info">
+        <p class="eyebrow" id="detail-collection">Bags &amp; totes</p>
+        <h1 id="detail-name">Bloom market bag</h1>
+        <p class="price" id="detail-price">$84</p>
+        <p class="description" id="detail-description"></p>
+        <div class="variant"><span>Choose your colour</span><div><button class="swatch oat active" aria-label="Oat"></button><button class="swatch pink" aria-label="Pink"></button><button class="swatch sage" aria-label="Sage"></button></div></div>
+        <div class="purchase"><div class="quantity"><button aria-label="Decrease quantity">−</button><span>1</span><button aria-label="Increase quantity">+</button></div><button class="add">Add to bag <span>→</span></button></div>
+        <details open><summary>Details &amp; care <span>+</span></summary><p id="detail-care"></p></details>
+        <details><summary>Shipping &amp; returns <span>+</span></summary><p>Each piece is made with care and dispatched within 7–10 working days. Returns are accepted within 14 days of delivery.</p></details>
+      </aside>
+    </section>
+  </main>
+  <footer><p class="brand">loop<span>°</span></p><div class="footer-bottom"><span>© 2026 LOOP STUDIO</span><span>HANDMADE WITH PATIENCE</span></div></footer>
+</body>
+</html>
