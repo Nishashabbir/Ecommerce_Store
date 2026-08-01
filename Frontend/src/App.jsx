@@ -17,7 +17,12 @@ import { AdminDashboard, AdminLogin, AdminPlaceholder } from "./admin/AdminDashb
 
 export default function App() {
   const [path] = useLocation();
+  const token = typeof window !== "undefined" ? localStorage.getItem("adminToken") : null;
+  const isAdminRoute = path.startsWith("/admin");
 
+  if (isAdminRoute && path !== "/admin/login" && !token) {
+    return <AdminLogin />;
+  }
   if (path === "/admin/login") return <AdminLogin />;
   if (path === "/admin") return <AdminDashboard />;
   if (path === "/admin/products") return <AdminPlaceholder title="Products" />;
