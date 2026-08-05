@@ -1,5 +1,5 @@
 import { useLocation } from "wouter";
-import { products } from "./data/products";
+import { useProducts } from "./contexts/ProductsContext";
 import Home from "./pages/Home";
 import Story from "./pages/Story";
 import Shop from "./pages/Shop";
@@ -13,10 +13,14 @@ import Contact from "../client/src/pages/Contact";
 import FAQ from "../client/src/pages/FAQ";
 import { CollaboratorLayout } from "./pages/CollaboratorLayout";
 import OrderConfirmation from "../client/src/pages/OrderConfirmation";
-import { AdminDashboard, AdminLogin, AdminPlaceholder } from "./admin/AdminDashboard";
+import { AdminDashboard, AdminLogin } from "./admin/AdminDashboard";
+import { AdminProducts } from "./admin/AdminProducts";
+import { AdminOrders } from "./admin/AdminOrders";
+import { AdminCustomers } from "./admin/AdminCustomers";
 
 export default function App() {
   const [path] = useLocation();
+  const products = useProducts();
   const token = typeof window !== "undefined" ? localStorage.getItem("adminToken") : null;
   const isAdminRoute = path.startsWith("/admin");
 
@@ -25,9 +29,9 @@ export default function App() {
   }
   if (path === "/admin/login") return <AdminLogin />;
   if (path === "/admin") return <AdminDashboard />;
-  if (path === "/admin/products") return <AdminPlaceholder title="Products" />;
-  if (path === "/admin/orders") return <AdminPlaceholder title="Orders" />;
-  if (path === "/admin/customers") return <AdminPlaceholder title="Customers" />;
+  if (path === "/admin/products") return <AdminProducts />;
+  if (path === "/admin/orders") return <AdminOrders />;
+  if (path === "/admin/customers") return <AdminCustomers />;
   if (path === "/about") return <CollaboratorLayout><About /></CollaboratorLayout>;
   if (path === "/contact") return <CollaboratorLayout><Contact /></CollaboratorLayout>;
   if (path === "/faq") return <CollaboratorLayout><FAQ /></CollaboratorLayout>;

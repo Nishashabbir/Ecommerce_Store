@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
-import { categories, products } from "../data/products";
+import { categories } from "../data/products";
+import { useProducts } from "../contexts/ProductsContext";
 import { CategoryFilters, Footer, ProductCard, useReveal } from "../components";
 import { Header } from "../navigation";
 
 export default function Shop() {
   useReveal();
+  const products = useProducts();
   const queryFilter = new URLSearchParams(location.search).get("category");
   const [filter, setFilter] = useState(
     categories[queryFilter] ? queryFilter : "all"

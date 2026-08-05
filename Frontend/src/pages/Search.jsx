@@ -1,10 +1,12 @@
 import { useState } from "react";
-import { categories, products } from "../data/products";
+import { categories } from "../data/products";
+import { useProducts } from "../contexts/ProductsContext";
 import { Footer, Link, ProductCard, useReveal } from "../components";
 import { Header } from "../navigation";
 
 export default function Search() {
   useReveal();
+  const products = useProducts();
   const initialQuery =
     new URLSearchParams(location.search).get("q")?.trim() || "";
   const [query, setQuery] = useState(initialQuery);

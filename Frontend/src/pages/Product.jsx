@@ -1,21 +1,26 @@
 import { useState } from "react";
-import { categories, products } from "../data/products";
+import { categories } from "../data/products";
+import { useProducts } from "../contexts/ProductsContext";
 import { Footer, Link, ProductCard, Quantity, useReveal } from "../components";
 import { Header } from "../navigation";
 
 export default function Product({ id }) {
+  const products = useProducts();
   const product = products.find(p => p.id === id);
   const [colour, setColour] = useState("oat");
   const [quantity, setQuantity] = useState(1);
-  const recommendations = [
-    ...products.filter(
-      item => item.id !== product.id && item.category === product.category
-    ),
-    ...products.filter(
-      item => item.id !== product.id && item.category !== product.category
-    ),
-  ].slice(0, 3);
+  const recommendations = product
+    ? [
+        ...products.filter(
+          item => item.id !== product.id && item.category === product.category
+        ),
+        ...products.filter(
+          item => item.id !== product.id && item.category !== product.category
+        ),
+      ].slice(0, 3)
+    : [];
   useReveal();
+  if (!product) return null;
   return (
     <>
       <Header />

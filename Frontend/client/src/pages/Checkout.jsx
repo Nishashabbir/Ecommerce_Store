@@ -1,8 +1,10 @@
 import { useState } from "react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { ChevronRight, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { products } from "../../../src/data/products";
+import { useCart } from "@/contexts/CartContext";
+import { createOrder } from "../../../src/api";
 
 const slideIn = {
   initial: { opacity: 0, x: -20 },
@@ -11,7 +13,11 @@ const slideIn = {
 };
 
 export default function Checkout() {
+  const [, setLocation] = useLocation();
+  const { items: cartItemsFromContext, clearCart } = useCart();
   const [currentStep, setCurrentStep] = useState(1);
+  const [placing, setPlacing] = useState(false);
+  const [error, setError] = useState("");
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -47,16 +53,20 @@ export default function Checkout() {
     ) || 1
   );
   const selectedProduct = products.find(product => product.id === selectedProductId);
-  const cartItems = selectedProduct
+  const directItems = selectedProduct
     ? [
         {
           id: selectedProduct.id,
           name: selectedProduct.name,
           price: Number(selectedProduct.price.replace(/[^0-9.]/g, "")),
           quantity: selectedQuantity,
+          image: selectedProduct.image,
         },
       ]
     : [];
+
+  const cartItems =
+    directItems.length > 0 ? directItems : cartItemsFromContext;
 
   const subtotal = cartItems.reduce(
     (sum, item) => sum + item.price * item.quantity,
@@ -65,6 +75,62 @@ export default function Checkout() {
   const shipping = subtotal === 0 || subtotal > 100 ? 0 : 10;
   const tax = (subtotal + shipping) * 0.1;
   const total = subtotal + shipping + tax;
+
+  const handlePlaceOrder = async () => {
+    setError("");
+    if (cartItems.length === 0) {
+      setError("Your cart is empty. Add a piece before checking out.");
+      return;
+    }
+    if (!formData.fullName || !formData.email || !formData.phone) {
+      setError("Please complete your contact details.");
+      setCurrentStep(1);
+      return;
+    }
+    if (
+      !formData.street ||
+      !formData.city ||
+      !formData.postal ||
+      !formData.country
+    ) {
+      setError("Please complete your shipping address.");
+      setCurrentStep(1);
+      return;
+    }
+
+    setPlacing(true);
+    const { response, data } = await createOrder({
+      items: cartItems.map(item => ({
+        slug: item.id,
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+        image: item.image,
+      })),
+      customer: {
+        fullName: formData.fullName,
+        email: formData.email,
+        phone: formData.phone,
+      },
+      shippingAddress: {
+        street: formData.street,
+        city: formData.city,
+        state: formData.state,
+        postal: formData.postal,
+        country: formData.country,
+      },
+      paymentMethod: formData.paymentMethod,
+    });
+    setPlacing(false);
+
+    if (!response.ok || !data.success) {
+      setError(data.message || "Failed to place your order. Please try again.");
+      return;
+    }
+
+    if (directItems.length === 0) clearCart();
+    setLocation(`/order-confirmation/${data.order.id}`);
+  };
 
   return (
     <>
@@ -359,20 +425,20 @@ export default function Checkout() {
                   </motion.button>
                 )}
                 {currentStep === 3 && (
-                  <Link
-                    href={`/order-confirmation/12345?product=${encodeURIComponent(selectedProductId ?? "")}&quantity=${selectedQuantity}`}
-                    className="inline-block"
+                  <motion.button
+                    onClick={handlePlaceOrder}
+                    disabled={placing}
+                    className="btn-primary min-w-[140px]"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                   >
-                    <motion.button
-                      className="btn-primary min-w-[140px]"
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      Place Order
-                    </motion.button>
-                  </Link>
+                    {placing ? "Placing order..." : "Place Order"}
+                  </motion.button>
                 )}
               </div>
+              {error && (
+                <p className="text-center text-red-600 mt-6">{error}</p>
+              )}
             </div>
 
             <motion.div

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { products } from "../data/products";
+import { useProducts } from "../contexts/ProductsContext";
 import { Footer, Link, ProductCard, useReveal } from "../components";
 import { Header } from "../navigation";
 
@@ -89,6 +89,7 @@ function Hero() {
 
 export default function Home() {
   useReveal();
+  const products = useProducts();
   return (
     <>
       <main>

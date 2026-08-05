@@ -1,9 +1,9 @@
-import { useCart } from "@/contexts/CartContext";
-import { useCheckout } from "@/contexts/CheckoutContext";
-import { Link, useParams } from "wouter";
+import { useEffect, useState } from "react";
+import { useParams } from "wouter";
+import { Link } from "wouter";
 import { CheckCircle, Package, Truck, MapPin, CreditCard } from "lucide-react";
 import { motion } from "framer-motion";
-import { products } from "../../../src/data/products";
+import { getOrder } from "../../../src/api";
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 20 },
@@ -14,53 +14,73 @@ const fadeInUp = {
   }),
 };
 
+const ORDER_STATUS_INDEX = {
+  pending: 0,
+  processing: 1,
+  shipped: 2,
+  delivered: 3,
+  cancelled: 0,
+};
+
+function formatPrice(value) {
+  return `$${Number(value || 0).toFixed(2)}`;
+}
+
 export default function OrderConfirmation() {
   const { orderId } = useParams();
-  const {
-    items: savedItems,
-    subtotal: savedSubtotal,
-    tax: savedTax,
-    shipping: savedShipping,
-    total: savedTotal,
-    couponDiscount,
-  } = useCart();
-  const { shippingAddress } = useCheckout();
+  const [order, setOrder] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const selectedProductId = new URLSearchParams(window.location.search).get(
-    "product"
-  );
-  const selectedQuantity = Math.max(
-    1,
-    Number.parseInt(
-      new URLSearchParams(window.location.search).get("quantity") ?? "1",
-      10
-    ) || 1
-  );
-  const selectedProduct = products.find(product => product.id === selectedProductId);
-  const items = selectedProduct
-    ? [
-        {
-          id: selectedProduct.id,
-          name: selectedProduct.name,
-          price: Number(selectedProduct.price.replace(/[^0-9.]/g, "")),
-          quantity: selectedQuantity,
-          image: selectedProduct.image,
-        },
-      ]
-    : savedItems;
-  const subtotal = selectedProduct
-    ? items[0].price * items[0].quantity
-    : savedSubtotal;
-  const shipping = selectedProduct
-    ? subtotal > 100
-      ? 0
-      : 10
-    : savedShipping;
-  const tax = selectedProduct ? (subtotal + shipping) * 0.1 : savedTax;
-  const total = selectedProduct ? subtotal + shipping + tax : savedTotal;
+  useEffect(() => {
+    let cancelled = false;
+    getOrder(orderId)
+      .then(({ response, data }) => {
+        if (!cancelled && response.ok && data.success) setOrder(data.order);
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [orderId]);
 
   const deliveryDate = new Date();
   deliveryDate.setDate(deliveryDate.getDate() + 7);
+
+  const items = order?.items || [];
+  const subtotal = order?.subtotal ?? 0;
+  const shipping = order?.shippingFee ?? 0;
+  const tax = order?.tax ?? 0;
+  const total = order?.total ?? 0;
+  const status = order?.status || "pending";
+  const activeStatus = ORDER_STATUS_INDEX[status] ?? 0;
+  const shippingAddress = order?.shippingAddress || {};
+  const customer = order?.customer || {};
+
+  const statusSteps = [
+    {
+      icon: CheckCircle,
+      title: "Order Confirmed",
+      desc: "Your order has been received",
+    },
+    {
+      icon: Package,
+      title: "Processing",
+      desc: "Your items are being prepared",
+    },
+    {
+      icon: Truck,
+      title: "Shipped",
+      desc: `Estimated delivery: ${deliveryDate.toLocaleDateString()}`,
+    },
+    {
+      icon: MapPin,
+      title: "Delivered",
+      desc: "Track your package",
+    },
+  ];
 
   return (
     <>
@@ -88,8 +108,14 @@ export default function OrderConfirmation() {
               Your handmade crochet items are being carefully prepared
             </p>
             <p className="text-[#B08A9E]">
-              Order ID: <span className="font-semibold">{orderId}</span>
+              Order:{" "}
+              <span className="font-semibold">
+                {order?.orderNumber || orderId}
+              </span>
             </p>
+            {loading && (
+              <p className="mt-4 text-[#B08A9E]">Loading order details...</p>
+            )}
           </motion.div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -106,32 +132,7 @@ export default function OrderConfirmation() {
                   Order Status
                 </h2>
                 <div className="space-y-6">
-                  {[
-                    {
-                      icon: CheckCircle,
-                      title: "Order Confirmed",
-                      desc: "Your order has been received",
-                      active: true,
-                    },
-                    {
-                      icon: Package,
-                      title: "Processing",
-                      desc: "Your items are being prepared",
-                      active: false,
-                    },
-                    {
-                      icon: Truck,
-                      title: "Shipped",
-                      desc: `Estimated delivery: ${deliveryDate.toLocaleDateString()}`,
-                      active: false,
-                    },
-                    {
-                      icon: MapPin,
-                      title: "Delivered",
-                      desc: "Track your package",
-                      active: false,
-                    },
-                  ].map((step, index) => (
+                  {statusSteps.map((step, index) => (
                     <motion.div
                       key={index}
                       className="flex gap-4"
@@ -143,7 +144,7 @@ export default function OrderConfirmation() {
                       <div className="flex flex-col items-center">
                         <div
                           className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
-                            step.active
+                            index <= activeStatus
                               ? "bg-[#D4878E] text-[#FDF9F5]"
                               : "bg-[#C9AFAE] text-[#5C4A47]"
                           }`}
@@ -152,7 +153,7 @@ export default function OrderConfirmation() {
                         </div>
                         {index < 3 && (
                           <div
-                            className={`w-1 h-8 mt-2 transition-all duration-300 ${step.active ? "bg-[#D4878E]" : "bg-[#C9AFAE]"}`}
+                            className={`w-1 h-8 mt-2 transition-all duration-300 ${index < activeStatus ? "bg-[#D4878E]" : "bg-[#C9AFAE]"}`}
                           />
                         )}
                       </div>
@@ -180,9 +181,9 @@ export default function OrderConfirmation() {
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <p className="text-sm text-[#B08A9E] mb-1">Order ID</p>
+                    <p className="text-sm text-[#B08A9E] mb-1">Order</p>
                     <p className="text-lg font-bold text-[#5C4A47]">
-                      {orderId}
+                      {order?.orderNumber || orderId}
                     </p>
                   </div>
                   <div>
@@ -213,12 +214,12 @@ export default function OrderConfirmation() {
                   Shipping Address
                 </h3>
                 <p className="text-sm text-[#5C4A47] leading-relaxed">
-                  {shippingAddress.fullName}
+                  {shippingAddress.fullName || customer.name}
                   <br />
-                  {shippingAddress.address}
+                  {shippingAddress.street}
                   <br />
-                  {shippingAddress.city}, {shippingAddress.province}{" "}
-                  {shippingAddress.postalCode}
+                  {shippingAddress.city}, {shippingAddress.state}{" "}
+                  {shippingAddress.postal}
                   <br />
                   {shippingAddress.country}
                 </p>
@@ -235,36 +236,46 @@ export default function OrderConfirmation() {
                 <h3 className="text-xl font-bold text-[#5C4A47] mb-4">
                   Ordered Products
                 </h3>
-                <div className="space-y-4">
-                  {items.map((item, index) => (
-                    <motion.div
-                      key={item.id}
-                      className="flex gap-4 pb-4 border-b border-[#C9AFAE]/30 last:border-0 last:pb-0"
-                      initial={{ opacity: 0, x: -20 }}
-                      whileInView={{ opacity: 1, x: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: index * 0.1 }}
-                    >
-                      <motion.img
-                        src={item.image}
-                        alt={item.name}
-                        className="w-16 h-16 object-cover rounded-lg"
-                        whileHover={{ scale: 1.1 }}
-                      />
-                      <div className="flex-1">
-                        <h4 className="font-semibold text-[#5C4A47]">
-                          {item.name}
-                        </h4>
-                        <p className="text-sm text-[#B08A9E]">
-                          Quantity: {item.quantity}
-                        </p>
-                        <p className="font-bold text-[#D4878E]">
-                          ${(item.price * item.quantity).toFixed(2)}
-                        </p>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
+                {items.length === 0 ? (
+                  <p className="text-sm text-[#B08A9E]">
+                    {loading
+                      ? "Loading your items..."
+                      : "No items were recorded for this order."}
+                  </p>
+                ) : (
+                  <div className="space-y-4">
+                    {items.map((item, index) => (
+                      <motion.div
+                        key={`${item.slug || item.name}-${index}`}
+                        className="flex gap-4 pb-4 border-b border-[#C9AFAE]/30 last:border-0 last:pb-0"
+                        initial={{ opacity: 0, x: -20 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: index * 0.1 }}
+                      >
+                        {item.image && (
+                          <motion.img
+                            src={item.image}
+                            alt={item.name}
+                            className="w-16 h-16 object-cover rounded-lg"
+                            whileHover={{ scale: 1.1 }}
+                          />
+                        )}
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-[#5C4A47]">
+                            {item.name}
+                          </h4>
+                          <p className="text-sm text-[#B08A9E]">
+                            Quantity: {item.quantity}
+                          </p>
+                          <p className="font-bold text-[#D4878E]">
+                            {formatPrice(item.price * (item.quantity || 1))}
+                          </p>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                )}
               </motion.div>
             </div>
 
@@ -296,27 +307,19 @@ export default function OrderConfirmation() {
                   <div className="flex justify-between text-sm">
                     <span className="text-[#5C4A47]">Subtotal</span>
                     <span className="font-semibold text-[#5C4A47]">
-                      ${subtotal.toFixed(2)}
+                      {formatPrice(subtotal)}
                     </span>
                   </div>
-                  {couponDiscount > 0 && (
-                    <div className="flex justify-between text-sm">
-                      <span className="text-[#D4878E]">Discount</span>
-                      <span className="font-semibold text-[#D4878E]">
-                        -${couponDiscount.toFixed(2)}
-                      </span>
-                    </div>
-                  )}
                   <div className="flex justify-between text-sm">
                     <span className="text-[#5C4A47]">Shipping</span>
                     <span className="font-semibold text-[#5C4A47]">
-                      {shipping === 0 ? "FREE" : `$${shipping.toFixed(2)}`}
+                      {shipping === 0 ? "FREE" : formatPrice(shipping)}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-[#5C4A47]">Tax (10%)</span>
                     <span className="font-semibold text-[#5C4A47]">
-                      ${tax.toFixed(2)}
+                      {formatPrice(tax)}
                     </span>
                   </div>
                 </div>
@@ -326,7 +329,7 @@ export default function OrderConfirmation() {
                       Total
                     </span>
                     <span className="text-2xl font-bold text-[#D4878E]">
-                      ${total.toFixed(2)}
+                      {formatPrice(total)}
                     </span>
                   </div>
                 </div>

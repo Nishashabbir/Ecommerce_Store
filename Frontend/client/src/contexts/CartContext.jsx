@@ -3,25 +3,7 @@ import { createContext, useContext, useState } from 'react';
 const CartContext = createContext(undefined);
 
 export function CartProvider({ children }) {
-  const [items, setItems] = useState([
-    {
-      id: '1',
-      name: 'Artisan Crochet Cardigan',
-      price: 89.99,
-      quantity: 1,
-      color: 'Dusty Rose',
-      image: '/images/products/bag.png',
-    },
-    {
-      id: '2',
-      name: 'Handmade Crochet Sweater',
-      price: 129.99,
-      quantity: 1,
-      size: 'M',
-      color: 'Cream',
-      image: '/images/products/bag4.png',
-    },
-  ]);
+  const [items, setItems] = useState([]);
   const [couponDiscount, setCouponDiscount] = useState(0);
 
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
